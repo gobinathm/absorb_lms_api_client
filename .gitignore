@@ -1,0 +1,6 @@
+# Composer
+src/vendor/*
+!vendor/.gitkeep
+
+# Node
+node_modules
