@@ -4,3 +4,6 @@ src/vendor/*
 
 # Node
 node_modules
+
+composer.phar
+
