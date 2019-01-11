@@ -6,11 +6,11 @@ This plugin allows WP to interface with the Absorb LMS to get course  informatio
 Set the following constants in wp-config.php:
 
 // ** Absorb API ** //
-define('ABSORB_PRIV_KEY', 'XXXXXXXXX');
-define('ABSORB_USER', 'XXXXXXXXX');
-define('ABSORB_PASS', 'XXXXXXXXX');
-define('ABSORB_DEPT_ID', 'XXXXXXXXX'); 
-define('ABSORB_URL', 'XXXXXXXXX');
+define('ABSORB_PRIV_KEY', 'XXXXXXXXX');  
+define('ABSORB_USER', 'XXXXXXXXX');  
+define('ABSORB_PASS', 'XXXXXXXXX');  
+define('ABSORB_DEPT_ID', 'XXXXXXXXX');   
+define('ABSORB_URL', 'XXXXXXXXX');  
 
 
 
