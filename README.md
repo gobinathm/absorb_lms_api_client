@@ -7,15 +7,10 @@ Set the following constants in wp-config.php:
 // ** Absorb API ** //
 
 define('ABSORB_PRIV_KEY', 'XXXXXXXXX');
-
 define('ABSORB_USER', 'XXXXXXXXX');
-
 define('ABSORB_PASS', 'XXXXXXXXX');
-
 define('ABSORB_DEPT_ID', 'XXXXXXXXX'); 
-
 define('ABSORB_URL', 'XXXXXXXXX');
-
 
 
 This is a fairly bare-bones plugin that enables Asbosrb integration funcitonality, but requires some customization to get up and running with your specific implementation. Feel free to reach out with any questions. 
