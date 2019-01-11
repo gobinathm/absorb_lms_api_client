@@ -8,10 +8,8 @@
  *	"Requests" library for API HTTP requests (Included in WP)
  *
  * 	Light SAML library for SSO 
-	https://www.lightsaml.com
+ *	https://www.lightsaml.com
  *
-
-
 	 * Example: 
 	 * $api_client = new AbsorbAPIClient();
 	 * $api_client -> register();

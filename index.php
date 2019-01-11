@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Absorb API Client
  * Description: Absorb API Client Plugin. This plugin allows WP to interface with the Absorb LMS to get course  information in order to create links to courses within WordPress/WooCommerce. Then allowing a logged in user, after purchasing courses, to processe the Single Sign On to Absorb from these links using lightSAML. 
- * Version: 0.1
+ * Version: 0.2
  * Author: Greg Pymm
  * Author URI: http://pymm.com
  * License: No license available at this time. 
@@ -22,20 +22,24 @@ class AbsorbAPIClientPlugin {
 		private $debug		= false; 
 
 		private $api_client;
+		
+		private $order_id;
 
 		private $products_array;
 		
 		private $absorb_private_key;
 		private $absorb_admin_username;
 		private $absorb_admin_password;
+		private $absorb_dept_id;
 		private $BASE_URL;
 		
 		function __construct($options) 
 		{
-			$this->absorb_private_key = $options['absorb_private_key'];
-			$this->absorb_admin_username = $options['absorb_admin_username'];
-			$this->absorb_admin_password = $options['absorb_admin_password'];
-			$this->BASE_URL = $options['base_url'];
+			$this->absorb_private_key 		= $options['absorb_private_key'];
+			$this->absorb_admin_username 	= $options['absorb_admin_username'];
+			$this->absorb_admin_password 	= $options['absorb_admin_password'];
+			$this->absorb_dept_id 			= $options['absorb_dept_id'];
+			$this->BASE_URL 				= $options['base_url'];
 		}
 
 
@@ -43,8 +47,10 @@ class AbsorbAPIClientPlugin {
 
 			// Require
 			require_once 'src/AbsorbAPIClient.php'; 
+
 			// Any WOOCommerce action can be used here
-			add_action( 'woocommerce_new_order', array($this, 'process') );
+			// add_action( 'woocommerce_new_order', array($this, 'process') );
+			add_action( 'woocommerce_order_status_completed', array($this, 'process') );
 		
 
 		}
@@ -60,8 +66,10 @@ class AbsorbAPIClientPlugin {
 
 
 
-		function process()
+		function process($order_id)
 		{
+
+			$this -> order_id = $order_id;
 
 			$this->api_client = new AbsorbAPIClient(array(
 				'absorb_private_key' => $this->absorb_private_key,
@@ -90,7 +98,7 @@ class AbsorbAPIClientPlugin {
 			//
 			// Collect all WP Product IDs from Cart
 			//
-			$this->get_products();
+		//	$this->get_products();
 			// For each product
 			// -- Retrieve the External ID and LMS Dept ID. 
 			// -- Retrieve course ID from LMS by External ID
@@ -99,7 +107,9 @@ class AbsorbAPIClientPlugin {
 			// -- 	-- Udpate User with Dept ID and User ID. 
 			// -- NO
 			// -- 	-- Continue
-			$this->process_enrollments();
+			
+		// $this->process_enrollments();
+			
 			// -- Enroll User in this course with Course ID and User ID. 
 			//
 			// Repeat
@@ -132,9 +142,16 @@ class AbsorbAPIClientPlugin {
 			$api_client = $this -> api_client;
 
 
-			// Get current logged-in WP user
-			$current_user 	= wp_get_current_user();
+			$order 			= new WC_Order( $this -> order_id );
+			$current_user 	= $order -> get_user();
 
+
+			// Get current logged-in WP user <- Fails when admin changes status
+			// $current_user 	= wp_get_current_user();
+			
+			$this->message ('User from Order:' . $current_user->user_email );
+
+			
 			if($this->debug) echo "<b>Current logged in user email: </b><br>" . $current_user->user_email;
 			if($this->debug) echo "<br><b>Current logged in user ID: </b><br>" . $current_user->ID;
 			if($this->debug) echo "<br>---------<br>";
@@ -186,14 +203,14 @@ class AbsorbAPIClientPlugin {
 				
 				if($this->debug) echo "<br><b>No. User does not exist, create user in LMS: </b><br><br>";
 
-				$non_member_dept_id = 'XXXXXX-786d-4adf-83b5-70179b27a437'; // Non Member Department
+				$absorb_dept_id = $this -> absorb_dept_id ; //'XXXXXX-786d-4adf-83b5-70179b27a437'; // Non Member Department a337f2f2-49c1-4342-8458-b7cb71e44109
 
 				$last_name 		= $current_user->user_lastname; 
 				$first_name 	= $current_user->user_firstname; 
 
 				$user_info  	= (object) array(
 
-											  "DepartmentId" 	=> $non_member_dept_id, 
+											  "DepartmentId" 	=> $absorb_dept_id, 
 											  "FirstName"		=> empty($first_name) 	? 'FIRSTNAME' : $first_name,
 											  "LastName"		=> empty($last_name) 	? 'LASTNAME' : $last_name,
 											  "Username"		=> $current_user->user_email,
@@ -207,7 +224,7 @@ class AbsorbAPIClientPlugin {
 
 				if( !$new_user->Id ){
 		
-					$this->message ('Problem Creating a new user in the LMS');
+					$this->message ('Problem Creating a new user in the LMS:' . $this -> absorb_dept_id );
 					
 					if($this->debug) var_dump($new_user);
 				
@@ -219,6 +236,8 @@ class AbsorbAPIClientPlugin {
 					$api_client -> lms_user 	= $user_info;
 					
 					if($this->debug) var_dump( $api_client -> lms_user );
+
+					$this->message ('User Created in LMS:' . $this -> absorb_dept_id );
 				}
 
 				
@@ -449,13 +468,14 @@ function _absorb_api_client_plugin() {
 	
 	if( !isset($absorb_api_client_plugin) ) {
 		
-		error_log('new absorb_api_client_plugin');
+		// error_log('new absorb_api_client_plugin');
 
 		$absorb_api_client_plugin = new AbsorbAPIClientPlugin(array(
-			'absorb_private_key' => (defined('ABSORB_PRIV_KEY')) ? constant('ABSORB_PRIV_KEY') : null, 
+			'absorb_private_key' 	=> (defined('ABSORB_PRIV_KEY')) ? constant('ABSORB_PRIV_KEY') : null, 
 			'absorb_admin_username' => defined('ABSORB_USER') ? constant('ABSORB_USER') : null,
 			'absorb_admin_password' => defined('ABSORB_PASS') ? constant('ABSORB_PASS') : null,
-			'base_url' => defined('ABSORB_URL') ? constant('ABSORB_URL') : null
+			'absorb_dept_id' 		=> defined('ABSORB_DEPT_ID') ? constant('ABSORB_DEPT_ID') : null,
+			'base_url' 				=> defined('ABSORB_URL') ? constant('ABSORB_URL') : null
 		));
 		$absorb_api_client_plugin->initialize();
 	}
