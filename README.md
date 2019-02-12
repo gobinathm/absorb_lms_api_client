@@ -1,6 +1,6 @@
-# Absorb LMS API Client Plugin for Wordpress
+# Absorb Wordpress SSO / Wordpress Plugin for SSO and API access to Absorb LMS 
 
-This plugin allows WP to interface with the Absorb LMS to get course  information in order to create links to courses within WordPress/WooCommerce. Then allowing a logged in user, after purchasing courses, to processe the Single Sign On to Absorb from these links using lightSAML. 
+This plugin allows WP to interface with the Absorb LMS to get course  information in order to create links to courses within WordPress/WooCommerce. Then allowing a logged in user, after purchasing courses, to processe the SSO(Single Sign On) to Absorb from these links using lightSAML. 
 
 
 Set the following constants in wp-config.php:
